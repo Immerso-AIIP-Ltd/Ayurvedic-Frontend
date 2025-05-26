@@ -1,38 +1,310 @@
-.App {
-  text-align: center;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.ayurdeva {
+  background-color: #ffffff;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-.App-link {
-  color: #61dafb;
+.ayurdeva .div,
+.ayurdeva .overlap {
+  width: 100vw;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background-color: #ffffff;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.ayurdeva .screenshot {
+  width: 100vw;
+  height: auto;
+  max-height: 100vh;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
+
+/* .ayurdeva .logo {
+  height: clamp(60px, 6vw, 110px);
+  width: clamp(150px, 15vw, 279px);
+  position: absolute;
+  top: clamp(10px, 2vh, 22px);
+  left: clamp(30px, 4vw, 72px);
+  object-fit: cover;
+} */
+
+.ayurdeva .card {
+  position: absolute;
+  width: 921.65px;
+  height: 512.43px;
+  top: 160.19px;
+  left: 517.05px;
+  border-radius: 25.28px;
+  border-width: 0.94px;
+  opacity: 0.4;
+  transform: rotate(-90.24deg);
+  
+  background: radial-gradient(
+    50% 50% at 49% 50%,
+    rgba(28, 28, 28, 1) 63%,
+    rgba(114, 124, 130, 1) 81%,
+    rgba(194, 202, 206, 1) 100%
+  );
+  -webkit-backdrop-filter: blur(34.94px) brightness(100%);
+  backdrop-filter: blur(34.94px) brightness(100%);
+  border: none;
+}
+
+
+.ayurdeva .card::before {
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  background: linear-gradient(
+    109deg,
+    rgba(255, 255, 255, 0.64) 0%,
+    rgba(211, 211, 211, 0.08) 100%
+  );
+  border-radius: 25.28px;
+  content: "";
+  inset: 0;
+  mask-composite: exclude;
+  padding: 0.94px;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.ayurdeva .text-wrapper,
+.ayurdeva .text-wrapper-2,
+.ayurdeva .text-wrapper-3,
+.ayurdeva .text-wrapper-4,
+.ayurdeva .text-wrapper-5,
+.ayurdeva .text-wrapper-6,
+.ayurdeva .text-wrapper-7,
+.ayurdeva .text-wrapper-8,
+.ayurdeva .text-wrapper-9,
+.ayurdeva .text-wrapper-10,
+.ayurdeva .text-wrapper-11,
+.ayurdeva .text-wrapper-12 {
+  color: #ffffff;
+  font-weight: 500;
+  position: absolute;
+  /* font-size: clamp(18px, 3vw, 44.5px); */
+  font-size: 36px;
+  white-space: nowrap;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.ayurdeva .text-wrapper {
+  top: clamp(450px, 80vh, 1079px);
+  left: clamp(50px, 8vw, 166px);
+  font-size: clamp(20px, 3.5vw, 44.5px);
+  font-weight: 700;
+}
+
+.ayurdeva .text-wrapper-2,
+.ayurdeva .text-wrapper-3,
+.ayurdeva .text-wrapper-4 {
+  font-weight: 500;
+  font-size: clamp(18px, 3vw, 36px);
+}
+
+.ayurdeva .text-wrapper-2 {
+  top: clamp(120px, 20vh, 278px);
+  left: clamp(60px, 8vw, 173px);
+}
+
+.ayurdeva .text-wrapper-3 {
+  top: clamp(160px, 25vh, 364px);
+  left: clamp(50px, 8vw, 148px);
+}
+
+.ayurdeva .text-wrapper-4 {
+  top: clamp(200px, 30vh, 449px);
+  left: clamp(50px, 8vw, 148px);
+}
+
+.ayurdeva .text-wrapper-5 {
+  top: clamp(350px, 70vh, 862px);
+  left: clamp(70px, 10vw, 192px);
+}
+
+.ayurdeva .text-wrapper-6 {
+  top: clamp(390px, 78vh, 947px);
+  left: clamp(70px, 10vw, 189px);
+}
+
+.ayurdeva .group {
+  position: absolute;
+  top: clamp(5px, 1vh, 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(300px, 80vw, 887px);
+  height: clamp(60px, 12vh, 139px);
+}
+
+.ayurdeva .overlap-group {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ayurdeva .text-wrapper-7,
+.ayurdeva .text-wrapper-8 {
+  font-size: clamp(28px, 5vw, 55.4px);
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  color: #0a293b;
+  -webkit-text-stroke: 1px #ffffff;
+}
+
+.ayurdeva .text-wrapper-7 {
+  top: 0;
+  width: 100%;
+}
+
+.ayurdeva .text-wrapper-8 {
+  top: clamp(30px, 6vh, 62px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ayurdeva .vector,
+.ayurdeva .vector-2,
+.ayurdeva .vector-3 {
+  position: absolute;
+  bottom: clamp(20px, 3vh, 50px);
+}
+
+.ayurdeva .vector {
+  right: clamp(20px, 4vw, 47px);
+  width: clamp(20px, 4vw, 47px);
+  height: clamp(15px, 3vh, 33px);
+}
+
+.ayurdeva .vector-2 {
+  right: clamp(70px, 8vw, 1675px);
+  width: clamp(15px, 3vw, 32px);
+  height: clamp(20px, 4vh, 45px);
+}
+
+.ayurdeva .vector-3 {
+  right: clamp(20px, 4vw, 634px);
+  width: clamp(15px, 3vw, 31px);
+  height: clamp(15px, 3vh, 31px);
+}
+
+.ayurdeva .rectangle-2 {
+  -webkit-backdrop-filter: blur(34.94px) brightness(100%);
+  backdrop-filter: blur(34.94px) brightness(100%);
+  background: radial-gradient(
+    50% 50% at 49% 50%,
+    rgba(28, 28, 28, 1) 63%,
+    rgba(114, 124, 130, 1) 81%,
+    rgba(194, 202, 206, 1) 100%
+  );
+  height: clamp(40px, 6vh, 91px);
+  width: clamp(200px, 80vw, 1128px);
+  top: clamp(700px, 90vh, 1805px);
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
+}
+
+.ayurdeva .text-wrapper-9,
+.ayurdeva .text-wrapper-10,
+.ayurdeva .text-wrapper-11,
+.ayurdeva .text-wrapper-12 {
+  position: absolute;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.ayurdeva .text-wrapper-9 {
+  bottom: clamp(20px, 3vh, 32px);
+  right: clamp(20px, 4vw, 733px);
+  font-size: clamp(14px, 2vw, 24px);
+}
+
+.ayurdeva .text-wrapper-10,
+.ayurdeva .text-wrapper-11 {
+  font-size: clamp(24px, 4vw, 44.5px);
+  font-weight: 700;
+  left: clamp(50px, 8vw, 213px);
+}
+
+.ayurdeva .text-wrapper-10 {
+  top: clamp(600px, 150vh, 1644px);
+}
+
+.ayurdeva .text-wrapper-11 {
+  top: clamp(650px, 170vh, 1773px);
+}
+
+.ayurdeva .text-wrapper-12 {
+  font-family: "Tapestry-Regular", cursive;
+  /* font-size: clamp(18px, 3vw, 33.4px); */
+  top: clamp(800px, 200vh, 2212px);
+  right: clamp(20px, 4vw, 1269px);
+  font-size: 36px;
+}
+
+.chat-content {
+  margin-top: 20px;
+  /* Add chat messages here */
+}
+
+/* Input Bar */
+.input-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.add-button,
+.microphone-button,
+.send-button {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.message-input {
+  flex: 1;
+  margin: 0 10px;
+  padding: 10px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #000;
+  border-radius: 5px;
+}
+
