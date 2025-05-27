@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, MessageCircle, History, Bookmark, Settings, LogOut, Send, Mic } from 'lucide-react';
+import { Menu, X, MessageCircle, History, Bookmark, Settings, LogOut, Send, Mic, Plus } from 'lucide-react';
 import background from "./background.png";
 import logo from './logo.png';
 import sublogo from './sublogo.png';
 import { StopCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import sample from './sample.jpg'
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -41,7 +43,7 @@ const startNewChat = async () => {
   if (!confirmReset) return;
 
   try {
-    const response = await fetch('http://localhost:5000/new-chat', {
+    const response = await fetch('http://192.168.1.110:5000/new-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -205,16 +207,17 @@ const startNewChat = async () => {
 
 
 
-  const handleSendMessage = async () => {
-  if (!message.trim() && !audioBlob) return;
+const handleSendMessage = async () => {
+  if (!message.trim() && !selectedImage && !audioBlob) return;
 
   const userMessage = {
     type: 'user',
-    content: message || '[Audio message]',
+    content: message,
+    image: imagePreview, // This is the base64 preview URL
     timestamp: new Date().toLocaleTimeString(),
   };
 
-  setConversation((prev) => [...prev, userMessage]);
+  setConversation(prev => [...prev, userMessage]);
   setIsLoading(true);
 
   try {
@@ -224,15 +227,15 @@ const startNewChat = async () => {
       formData.append('text', message);
     }
 
-    if (audioBlob) {
-      formData.append('audio', audioBlob, 'recording.webm');
+    if (selectedImage) {
+      formData.append('image', selectedImage);
     }
 
-    // Clear input after sending
-    setMessage('');
-    setAudioBlob(null);
+    if (audioBlob) {
+      formData.append('audio', audioBlob, 'audio.webm');
+    }
 
-    const response = await fetch('http://localhost:5000/ayurveda-consult', {
+    const response = await fetch('http://192.168.1.110:5000/ayurveda-consult', {
       method: 'POST',
       body: formData,
     });
@@ -246,15 +249,23 @@ const startNewChat = async () => {
       timestamp: new Date().toLocaleTimeString(),
     };
 
-    setConversation((prev) => [...prev, assistantMessage]);
+    setConversation(prev => [...prev, assistantMessage]);
+
+    setMessage('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    setAudioBlob(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
 
   } catch (error) {
-    console.error('Error:', error);
-    setConversation((prev) => [
+    console.error('Error sending message:', error);
+    setConversation(prev => [
       ...prev,
       {
         type: 'error',
-        content: 'Failed to get response from assistant.',
+        content: 'Failed to get a response from the assistant.',
         timestamp: new Date().toLocaleTimeString(),
       },
     ]);
@@ -268,12 +279,23 @@ const startNewChat = async () => {
       handleSendMessage();
     }
   };
+const formatMessage = (content) => {
+  if (!content) return '';
+  
+  // Split the content into lines
+  const lines = content.split('\n');
 
-  const formatMessage = (content) => {
-    return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #84cc16; text-decoration: underline;">$1</a>');
-  };
+  return lines
+    .map(line => {
+      // Match lines starting with '##'
+      if (line.startsWith('##')) {
+        const heading = line.replace(/^##\s*/, '').trim();
+        return `<h4 class="gpt-heading">${heading}</h4>`;
+      }
+      return `<p>${line}</p>`;
+    })
+    .join('');
+};
 
 
   return (
@@ -411,8 +433,29 @@ const startNewChat = async () => {
           flex-direction: column;
           background: linear-gradient(135deg, rgba(132, 204, 22, 0.1), rgba(34, 197, 94, 0.1));
           position: relative;
-          overflow: hidden;
+          // overflow: hidden;
+          overflow-y: auto;
+          overflow-x: auto;
+           scroll-behavior: smooth;
         }
+          .main-content {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Optional scrollbar styling (WebKit browsers) */
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background-color: rgba(132, 204, 22, 0.6);
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
         .menu-toggle {
   position: absolute;
@@ -577,7 +620,24 @@ const startNewChat = async () => {
           padding: 40px 20px;
           z-index: 10;
           position: relative;
+          overflow-y: scroll;
+          overflow-y: scroll;
+          scroll-behavior: smooth;
+        
         }
+
+        .chat-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.chat-area::-webkit-scrollbar-thumb {
+  background: #84cc16;
+  border-radius: 3px;
+}
 //         .chat-area {
 //   flex: 1;
 //   overflow-y: auto;
@@ -626,9 +686,25 @@ const startNewChat = async () => {
   color: #6b7280;
 }
 
+.message-bubble h4.gpt-heading {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1f2937;
+  border-left: 4px solid #84cc16;
+  padding-left: 10px;
+  margin-left:10px
+}
+
+.message-bubble p {
+  margin-bottom: 0.5rem;
+   margin-left:10px
+}
+
         .welcome-message {
           text-align: center;
-          color: #374151;
+          color: white;
           font-size: 18px;
           margin-bottom: 30px;
           max-width: 600px;
@@ -826,6 +902,87 @@ const startNewChat = async () => {
   font-size: 12px;
 }
 
+.message-bubble {
+  max-width: 75%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.message-bubble.user {
+  align-self: flex-end;
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.message-bubble.assistant {
+  align-self: flex-start;
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.message-bubble img {
+  max-width: 200px;     /* Adjust as needed */
+  max-height: 200px;    /* Adjust as needed */
+  object-fit: contain;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.message-bubble small.timestamp {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #84cc16;
+}
+
+.input-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.image-preview {
+  position: relative;
+  max-width: 30%;
+  margin: 0.5rem 0;
+}
+
+.image-preview img {
+  max-width: 120px;     /* Limit preview width */
+  max-height: 120px;    /* Limit preview height */
+  object-fit: cover;    /* Keep aspect ratio, crop if needed */
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.remove-image {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
 
       `}</style>
 
@@ -950,11 +1107,12 @@ const startNewChat = async () => {
         className="header"
         style={{
           backgroundImage: `url(${sublogo})`,
+            // backgroundImage: `url(${sample})`,
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)'
+          // backdropFilter: 'blur(10px)',
+          // WebkitBackdropFilter: 'blur(10px)'
         }}
       >
         <button className="menu-toggle" onClick={toggleSidebar}>
@@ -976,17 +1134,38 @@ const startNewChat = async () => {
             <p>Welcome to your Ayurvedic health consultation. How can I help you today?</p>
           </div>
         )}
-
+{/* 
         {conversation.map((msg, index) => (
-          <div key={index} className={`message-bubble ${msg.type}`}>
-            <div
-              dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-            />
-            {msg.image && <img src={msg.image} alt="Assistant response" className="message-image" />}
-            <small className="timestamp">{msg.timestamp}</small>
-          </div>
-        ))}
+  <div key={index} className={`message-bubble ${msg.type}`}>
+    {msg.content && (
+      <div
+        dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
+      />
+    )}
+    {msg.image && (
+      <img src={msg.image} alt="User uploaded" className="message-image" />
+    )}
+    <small className="timestamp">{msg.timestamp}</small>
+  </div>
+))} */}
+{conversation.map((msg, index) => (
+  <div key={index} className={`message-bubble ${msg.type}`}>
+    <div style={{ marginLeft: '8px' }}>
+  <ReactMarkdown>{msg.content}</ReactMarkdown>
+</div>
+    {msg.image && <img src={msg.image} alt="Assistant response" className="message-image" />}
+    <small className="timestamp">{msg.timestamp}</small>
+  </div>
+))}
 
+         {imagePreview && (
+          <div className="image-preview">
+            <img src={imagePreview} alt="Selected preview" />
+            <button className="remove-image" onClick={clearImage}>
+              <X size={12} />
+            </button>
+          </div>
+        )}``
         {isLoading && (
           <div className="message-bubble loading">
             <span>Typing...</span>
@@ -994,6 +1173,13 @@ const startNewChat = async () => {
         )}
 
         <div className="input-container">
+           <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleImageSelect}
+          />
           <textarea
             className="message-input"
             placeholder="hi"
@@ -1003,6 +1189,13 @@ const startNewChat = async () => {
             rows={1}
           />
 <div className="input-actions">
+     <button
+            className="action-btn"
+            title="Upload image"
+            onClick={() => fileInputRef.current.click()}
+          >
+            <Plus size={16} />
+          </button>
   {!isRecording ? (
     <button className="action-btn" title="Start recording" onClick={startRecording}>
       <Mic size={16} />
@@ -1018,12 +1211,21 @@ const startNewChat = async () => {
     className="action-btn"
     title="Send message"
     onClick={handleSendMessage}
-    disabled={!message.trim() && !audioBlob}
+     disabled={!message.trim() && !selectedImage && !audioBlob}
   >
     <Send size={16} />
   </button>
 </div>
         </div>
+
+         {/* {imagePreview && (
+          <div className="image-preview">
+            <img src={imagePreview} alt="Selected preview" />
+            <button className="remove-image" onClick={clearImage}>
+              <X size={12} />
+            </button>
+          </div>
+        )} */}
       </div>
     </main>
     </div>
