@@ -1,32 +1,280 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, MessageCircle, History, Bookmark, Settings, LogOut, Send, Mic } from 'lucide-react';
 import background from "./background.png";
 import logo from './logo.png';
 import sublogo from './sublogo.png';
+import { StopCircle } from 'lucide-react';
 
- function App()  {
+function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [conversation, setConversation] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [generateVisual, setGenerateVisual] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const fileInputRef = useRef(null);
+  const chatAreaRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  useEffect(() => {
+    if (chatAreaRef.current) {
+      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+    }
+  }, [conversation]);
+
+
+
 
   const toggleSidebar = () => {
-    // setIsSidebarOpen(!isSidebarOpen);
-      setIsSidebarOpen(prev => !prev);
+    setIsSidebarOpen(prev => !prev);
   };
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      // Handle message sending logic here
-      console.log('Sending message:', message);
+const startNewChat = async () => {
+  const confirmReset = window.confirm("Start a new chat? This will clear the current conversation.");
+  
+  if (!confirmReset) return;
+
+  try {
+    const response = await fetch('http://localhost:5000/new-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (response.ok) {
+      setConversation([]);
       setMessage('');
+      setSelectedImage(null);
+      setImagePreview(null);
+      setAudioBlob(null);
+      setGenerateVisual(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } else {
+      alert('Failed to reset chat on server.');
+    }
+  } catch (error) {
+    console.error('Error starting new chat:', error);
+    alert('Could not reset chat. Please check your connection.');
+  }
+};
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setImagePreview(e.target.result);
+      reader.readAsDataURL(file);
     }
   };
 
+  const clearImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        setAudioBlob(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      alert('Could not access microphone. Please check permissions.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      setIsRecording(false);
+      setMediaRecorder(null);
+    }
+  };
+
+  const clearAudio = () => {
+    setAudioBlob(null);
+  };
+
+  // const handleSendMessage = async () => {
+  //   if (!message.trim() && !selectedImage && !audioBlob) return;
+
+  //   const userMessage = {
+  //     type: 'user',
+  //     content: message,
+  //     image: imagePreview,
+  //     timestamp: new Date().toLocaleTimeString()
+  //   };
+
+  //   setConversation((prev) => [...prev, userMessage]);
+  //   setIsLoading(true);
+
+  //   try {
+  //     const formData = new FormData();
+
+  //     if (message.trim()) {
+  //       formData.append('text', message);
+  //     }
+
+  //     if (selectedImage) {
+  //       formData.append('image', selectedImage);
+  //     }
+
+  //     if (audioBlob) {
+  //       formData.append('audio', audioBlob, 'audio.wav');
+  //     }
+
+  //     formData.append('generate_visual', generateVisual);
+  //     formData.append(
+  //       'conversation',
+  //       JSON.stringify(
+  //         conversation
+  //           .filter((msg) => msg.type === 'user' || msg.type === 'assistant')
+  //           .map((msg) => ({
+  //             role: msg.type === 'user' ? 'user' : 'assistant',
+  //             content: msg.content
+  //           }))
+  //       )
+  //     );
+
+  //     const response = await fetch('http://localhost:5000/ayurveda-consult', {
+  //       method: 'POST',
+  //       body: formData
+  //     });
+
+  //     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+  //     const data = await response.json();
+
+  //     const assistantMessage = {
+  //       type: 'assistant',
+  //       content: data.text,
+  //       image: data.image,
+  //       timestamp: new Date().toLocaleTimeString()
+  //     };
+
+  //     setConversation((prev) => [...prev, assistantMessage]);
+
+  //     setMessage('');
+  //     setSelectedImage(null);
+  //     setImagePreview(null);
+  //     setAudioBlob(null);
+  //     setGenerateVisual(false);
+  //     if (fileInputRef.current) {
+  //       fileInputRef.current.value = '';
+  //     }
+  //   } catch (error) {
+  //     console.error('Error sending message:', error);
+  //     const errorMessage = {
+  //       type: 'error',
+  //       content: 'Sorry, there was an error processing your request. Please try again.',
+  //       timestamp: new Date().toLocaleTimeString()
+  //     };
+  //     setConversation((prev) => [...prev, errorMessage]);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+
+
+  const handleSendMessage = async () => {
+  if (!message.trim() && !audioBlob) return;
+
+  const userMessage = {
+    type: 'user',
+    content: message || '[Audio message]',
+    timestamp: new Date().toLocaleTimeString(),
+  };
+
+  setConversation((prev) => [...prev, userMessage]);
+  setIsLoading(true);
+
+  try {
+    const formData = new FormData();
+
+    if (message.trim()) {
+      formData.append('text', message);
+    }
+
+    if (audioBlob) {
+      formData.append('audio', audioBlob, 'recording.webm');
+    }
+
+    // Clear input after sending
+    setMessage('');
+    setAudioBlob(null);
+
+    const response = await fetch('http://localhost:5000/ayurveda-consult', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    const assistantMessage = {
+      type: 'assistant',
+      content: data.text,
+      image: data.image,
+      timestamp: new Date().toLocaleTimeString(),
+    };
+
+    setConversation((prev) => [...prev, assistantMessage]);
+
+  } catch (error) {
+    console.error('Error:', error);
+    setConversation((prev) => [
+      ...prev,
+      {
+        type: 'error',
+        content: 'Failed to get response from assistant.',
+        timestamp: new Date().toLocaleTimeString(),
+      },
+    ]);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
+
+  const formatMessage = (content) => {
+    return content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #84cc16; text-decoration: underline;">$1</a>');
+  };
+
 
   return (
     <div className="app-container">
@@ -330,6 +578,53 @@ import sublogo from './sublogo.png';
           z-index: 10;
           position: relative;
         }
+//         .chat-area {
+//   flex: 1;
+//   overflow-y: auto;
+//   padding: 1rem;
+//   display: flex;
+//   flex-direction: column;
+//   gap: 0.75rem;
+// }
+
+.message-bubble {
+  max-width: 75%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.message-bubble.user {
+  align-self: flex-end;
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.message-bubble.assistant {
+  align-self: flex-start;
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.message-bubble.loading {
+  align-self: flex-start;
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.message-bubble img {
+  margin-top: 0.5rem;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.message-bubble small.timestamp {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
 
         .welcome-message {
           text-align: center;
@@ -520,6 +815,18 @@ import sublogo from './sublogo.png';
             height: 20px;
           }
         }
+
+        .action-btn.recording {
+  color: red;
+  font-weight: bold;
+}
+
+.recording-indicator {
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+
       `}</style>
 
       {/* Mobile Overlay */}
@@ -540,12 +847,16 @@ import sublogo from './sublogo.png';
 
         <nav>
           <ul className="nav-menu">
-            <li className="nav-item">
-              <a href="#" className="nav-link active">
-                <MessageCircle className="nav-icon" />
-                New Chat
-              </a>
-            </li>
+          <li className="nav-item">
+  <a href="#" className="nav-link active" onClick={(e) => {
+      e.preventDefault();
+      startNewChat();
+    }}
+  >
+    <MessageCircle className="nav-icon" />
+    New Chat
+  </a>
+</li>
             <li className="nav-item">
               <a href="#" className="nav-link">
                 <History className="nav-icon" />
@@ -632,71 +943,89 @@ import sublogo from './sublogo.png';
       </aside>
 
       {/* Main Content */}
-      <main className="main-content">
-        <div className="background-image">
-            
+ <main className="main-content">
+      <div className="background-image"></div>
+
+      <header
+        className="header"
+        style={{
+          backgroundImage: `url(${sublogo})`,
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)'
+        }}
+      >
+        <button className="menu-toggle" onClick={toggleSidebar}>
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+        <div className="header-top"></div>
+        <div className="header-title-section">
+          <div className="header-titles">
+            <h1 className="header-title-main">Ayurvedic Multimodal</h1>
+            <h2 className="header-title-main">Consultant</h2>
+          </div>
         </div>
-        
-<header
-  className="header"
-  style={{
-    backgroundImage: `url(${sublogo})`,
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center',
-     backdropFilter: 'blur(10px)', 
-    WebkitBackdropFilter: 'blur(10px)',
-    
-  }}
->
+      </header>
 
-      <button className="menu-toggle" onClick={toggleSidebar}>
-      {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-    </button>
-  <div className="header-top">
-    {/* Other elements */}
-  </div>
-  <div className="header-title-section">
-    <div className="header-titles">
-      {/* <div className="sublogo-container">
-        <img src={sublogo} alt="Ayurvedic Consultant" className="sublogo" />
-      </div> */}
-      <h1 className="header-title-main">Ayurvedic Multimodal</h1>
-      <h2 className="header-title-main">Consultant</h2>
-    </div>
-  </div>
-</header>
-
-        <div className="chat-area">
+      <div className="chat-area" ref={chatAreaRef}>
+        {/* Render Messages */}
+        {conversation.length === 0 && (
           <div className="welcome-message">
             <p>Welcome to your Ayurvedic health consultation. How can I help you today?</p>
           </div>
+        )}
 
-          <div className="input-container">
-            <textarea
-              className="message-input"
-              placeholder="hi"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              rows={1}
+        {conversation.map((msg, index) => (
+          <div key={index} className={`message-bubble ${msg.type}`}>
+            <div
+              dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
             />
-            <div className="input-actions">
-              <button className="action-btn" title="Voice input">
-                <Mic size={16} />
-              </button>
-              <button 
-                className="action-btn" 
-                onClick={handleSendMessage}
-                disabled={!message.trim()}
-                title="Send message"
-              >
-                <Send size={16} />
-              </button>
-            </div>
+            {msg.image && <img src={msg.image} alt="Assistant response" className="message-image" />}
+            <small className="timestamp">{msg.timestamp}</small>
           </div>
+        ))}
+
+        {isLoading && (
+          <div className="message-bubble loading">
+            <span>Typing...</span>
+          </div>
+        )}
+
+        <div className="input-container">
+          <textarea
+            className="message-input"
+            placeholder="hi"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            rows={1}
+          />
+<div className="input-actions">
+  {!isRecording ? (
+    <button className="action-btn" title="Start recording" onClick={startRecording}>
+      <Mic size={16} />
+    </button>
+  ) : (
+    <button className="action-btn recording" title="Stop recording" onClick={stopRecording}>
+      <StopCircle size={16} />
+      <span className="recording-indicator">Recording...</span>
+    </button>
+  )}
+
+  <button
+    className="action-btn"
+    title="Send message"
+    onClick={handleSendMessage}
+    disabled={!message.trim() && !audioBlob}
+  >
+    <Send size={16} />
+  </button>
+</div>
         </div>
-      </main>
+      </div>
+    </main>
     </div>
   );
 };
