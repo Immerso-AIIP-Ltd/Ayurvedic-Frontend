@@ -298,7 +298,7 @@ const formatMessage = (content) => {
 };
 
 
-  return (
+    return (
     <div className="app-container">
       <style jsx>{`
         * {
@@ -313,6 +313,100 @@ const formatMessage = (content) => {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           overflow: hidden;
         }
+
+
+
+        .chat-input-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+   margin-left: 17rem;
+  // background-color: #121212; 
+  padding: 1rem;
+  // border-top: 1px solid #333;
+  z-index: 100;
+}
+
+@media (max-width: 992px) {
+  .chat-input-wrapper {
+    margin-left: 12rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-input-wrapper {
+    margin-left: 4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-input-wrapper {
+    margin-left: 0;
+  }
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.message-input {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  // border: 1px solid #444;
+  background-color: #2a2a2a;
+  caret-color: #84CC16;
+  color: black;
+  resize: none;
+}
+
+.input-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s ease;
+}
+
+.action-btn:hover {
+  color: white;
+}
+
+.action-btn.recording {
+  color: red;
+}
+
+.recording-indicator {
+  font-size: 0.75rem;
+  color: red;
+  margin-left: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .chat-input-wrapper {
+    padding: 0.75rem;
+  }
+
+  .message-input {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
 
         /* Sidebar Styles */
         .sidebar {
@@ -1165,58 +1259,65 @@ const formatMessage = (content) => {
               <X size={12} />
             </button>
           </div>
-        )}``
+        )}
         {isLoading && (
           <div className="message-bubble loading">
             <span>Typing...</span>
           </div>
         )}
 
-        <div className="input-container">
-           <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-            onChange={handleImageSelect}
-          />
-          <textarea
-            className="message-input"
-            placeholder="hi"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            rows={1}
-          />
-<div className="input-actions">
-     <button
-            className="action-btn"
-            title="Upload image"
-            onClick={() => fileInputRef.current.click()}
-          >
-            <Plus size={16} />
-          </button>
-  {!isRecording ? (
-    <button className="action-btn" title="Start recording" onClick={startRecording}>
-      <Mic size={16} />
-    </button>
-  ) : (
-    <button className="action-btn recording" title="Stop recording" onClick={stopRecording}>
-      <StopCircle size={16} />
-      <span className="recording-indicator">Recording...</span>
-    </button>
-  )}
-
-  <button
-    className="action-btn"
-    title="Send message"
-    onClick={handleSendMessage}
-     disabled={!message.trim() && !selectedImage && !audioBlob}
-  >
-    <Send size={16} />
-  </button>
+<div className="chat-input-wrapper">
+  <div className="input-container">
+    <input
+      type="file"
+      accept="image/*"
+      ref={fileInputRef}
+      style={{ display: 'none' }}
+      onChange={handleImageSelect}
+    />
+    <textarea
+      className="message-input"
+      placeholder="Type a message..."
+      value={message}
+      onChange={(e) => setMessage(e.target.value)}
+      onKeyPress={handleKeyPress}
+      rows={1}
+      style={{
+        resize: 'none',
+        height: 'auto',
+        maxHeight: '100px',
+        width: 'calc(100% - 80px)', // Adjust based on button width
+      }}
+    />
+    <div className="input-actions">
+      <button
+        className="action-btn"
+        title="Upload image"
+        onClick={() => fileInputRef.current.click()}
+      >
+        <Plus size={16} />
+      </button>
+      {!isRecording ? (
+        <button className="action-btn" title="Start recording" onClick={startRecording}>
+          <Mic size={16} />
+        </button>
+      ) : (
+        <button className="action-btn recording" title="Stop recording" onClick={stopRecording}>
+          <StopCircle size={16} />
+          <span className="recording-indicator">Recording...</span>
+        </button>
+      )}
+      <button
+        className="action-btn"
+        title="Send message"
+        onClick={handleSendMessage}
+        disabled={!message.trim() && !selectedImage && !audioBlob}
+      >
+        <Send size={16} />
+      </button>
+    </div>
+  </div>
 </div>
-        </div>
 
          {/* {imagePreview && (
           <div className="image-preview">
