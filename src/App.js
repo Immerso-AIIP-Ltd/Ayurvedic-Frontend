@@ -43,7 +43,7 @@ const startNewChat = async () => {
   if (!confirmReset) return;
 
   try {
-    const response = await fetch('https://health-agent-a795ae5e2c9b.herokuapp.com/new-chat', {
+    const response = await fetch('http://192.168.1.110:5000/new-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -219,6 +219,10 @@ const handleSendMessage = async () => {
 
   setConversation(prev => [...prev, userMessage]);
   setIsLoading(true);
+    setMessage('');           // Clear text input
+  setSelectedImage(null);   // Clear selected image state
+  setImagePreview(null);    // Clear preview URL
+  setAudioBlob(null); 
 
   try {
     const formData = new FormData();
@@ -235,7 +239,7 @@ const handleSendMessage = async () => {
       formData.append('audio', audioBlob, 'audio.webm');
     }
 
-    const response = await fetch('https://health-agent-a795ae5e2c9b.herokuapp.com/ayurveda-consult', {
+    const response = await fetch('http://192.168.1.110:5000/ayurveda-consult', {
       method: 'POST',
       body: formData,
     });
@@ -298,1039 +302,777 @@ const formatMessage = (content) => {
 };
 
 
-    return (
-    <div className="app-container">
-      <style jsx>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+return (
+  <div className="app-container">
+    <style jsx>{`
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        .app-container {
-          display: flex;
-          height: 100vh;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          overflow: hidden;
-        }
+      .app-container {
+        display: flex;
+        height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        overflow: hidden;
+      }
 
+      /* Sidebar Styles */
+      .sidebar {
+        width: 280px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+      }
 
+      .sidebar-mobile {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 280px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1001;
+        display: none;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+      }
 
-        .chat-input-wrapper {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-   margin-left: 17rem;
-  // background-color: #121212; 
-  padding: 1rem;
-  // border-top: 1px solid #333;
-  z-index: 100;
-}
+      .sidebar-mobile.open {
+        transform: translateX(0);
+      }
 
-@media (max-width: 992px) {
-  .chat-input-wrapper {
-    margin-left: 12rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .chat-input-wrapper {
-    margin-left: 4rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .chat-input-wrapper {
-    margin-left: 0;
-  }
-}
-
-.input-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  max-width: 700px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.message-input {
-  flex: 1;
-  min-width: 150px;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  // border: 1px solid #444;
-  background-color: #2a2a2a;
-  caret-color: #84CC16;
-  color: black;
-  resize: none;
-}
-
-.input-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #ccc;
-  transition: color 0.2s ease;
-}
-
-.action-btn:hover {
-  color: white;
-}
-
-.action-btn.recording {
-  color: red;
-}
-
-.recording-indicator {
-  font-size: 0.75rem;
-  color: red;
-  margin-left: 0.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 576px) {
-  .chat-input-wrapper {
-    padding: 0.75rem;
-  }
-
-  .message-input {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.75rem;
-  }
-}
-
-        /* Sidebar Styles */
-        .sidebar {
-          width: 280px;
-        //   background: rgba(255, 255, 255, 0.95);
-        // background: radial-gradient(49.39% 137.84% at 50.61% 51.3%, #1C1C1C 62.98%, #727C82 80.77%, #C2CACE 100%) /* warning: gradient uses a rotation that is not supported by CSS and may not behave as expected */;
-
-          backdrop-filter: blur(10px);
-          border-right: 1px solid rgba(0, 0, 0, 0.1);
-          padding: 20px;
-          transition: transform 0.3s ease;
-          z-index: 1000;
-        }
-
-     .sidebar-mobile {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 280px;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-  z-index: 1001;
-  display: none;
-}
-
-.sidebar-mobile.open {
-  transform: translateX(0);
-}
-  @media (max-width: 768px) {
-  .sidebar-mobile {
-    display: block;
-  }
-}
-
-        .logo-section {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 40px;
-          padding-bottom: 20px;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .logo {
-          width: 150px;
-          height: 150px;
-          object-fit: contain;
+      @media (max-width: 768px) {
+        .sidebar-mobile {
           display: block;
-        margin-left: auto;
-        margin-right: auto;
         }
-
-        .app-title {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
+        .sidebar-desktop {
+          display: none;
         }
+      }
 
-        .title-main {
-          font-size: 16px;
-          font-weight: 700;
-          color: #1f2937;
-          line-height: 1.1;
-          margin-bottom: 2px;
+      @media (min-width: 769px) {
+        .sidebar-desktop {
+          display: block;
         }
-
-        .title-sub {
-          font-size: 18px;
-          font-weight: 500;
-          color: #6b7280;
-          line-height: 1.1;
+        .sidebar-mobile {
+          display: none;
         }
+      }
 
-        .nav-menu {
-          list-style: none;
-          margin-bottom: 40px;
-        }
+      .logo-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
 
-        .nav-item {
-          margin-bottom: 8px;
-        }
+      .logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        margin-bottom: 10px;
+      }
 
-        .nav-link {
-          display: flex;
-          align-items: center;
-          padding: 12px 16px;
-          text-decoration: none;
-          color:black;
-        //   color: #6b7280;
-          border-radius: 8px;
-          transition: all 0.2s ease;
-          font-weight: 500;
-        }
+      .nav-menu {
+        list-style: none;
+        margin-bottom: 20px;
+      }
 
-        .nav-link:hover,
-        .nav-link.active {
-          background: rgba(132, 204, 22, 0.1);
-          color: #84CC16;
-        }
+      .nav-item {
+        margin-bottom: 8px;
+      }
 
-        .nav-icon {
-          margin-right: 12px;
-          width: 20px;
-          height: 20px;
-        }
+      .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: #374151;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+      }
 
-        .nav-bottom {
-          margin-top: auto;
-          padding-top: 20px;
-          border-top: 1px solid rgba(0, 0, 0, 0.1);
-        }
+      .nav-link:hover,
+      .nav-link.active {
+        background: rgba(132, 204, 22, 0.1);
+        color: #84CC16;
+      }
 
-        /* Main Content Styles */
-        .main-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          background: linear-gradient(135deg, rgba(132, 204, 22, 0.1), rgba(34, 197, 94, 0.1));
-          position: relative;
-          // overflow: hidden;
-          overflow-y: auto;
-          overflow-x: auto;
-           scroll-behavior: smooth;
-        }
-          .main-content {
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
+      .nav-icon {
+        margin-right: 12px;
+        width: 20px;
+        height: 20px;
+      }
 
-/* Optional scrollbar styling (WebKit browsers) */
-.main-content::-webkit-scrollbar {
-  width: 8px;
-}
+      .nav-bottom {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+      }
 
-.main-content::-webkit-scrollbar-thumb {
-  background-color: rgba(132, 204, 22, 0.6);
-  border-radius: 4px;
-}
+      /* Main Content Styles */
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
 
-.main-content::-webkit-scrollbar-track {
-  background-color: rgba(255, 255, 255, 0.1);
-}
+      /* Background Image - Full Display */
+      .background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url(${background});
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        opacity: 0.9;
+        z-index: 1;
+      }
 
+      /* Header with Sublogo Background */
+      .header {
+        position: relative;
+        background-image: url(${sublogo});
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px 20px;
+        backdrop-filter: blur(5px);
+        z-index: 10;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: -1;
+      }
+
+      .menu-toggle {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        color: #374151;
+        font-size: 24px;
+        z-index: 1001;
+        display: none;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      @media (max-width: 768px) {
         .menu-toggle {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: transparent;
-  border: none;
-  color: #000; /* Adjust based on text contrast */
-  font-size: 24px;
-  z-index: 1001;
-  display: none;
-}
+          display: block;
+        }
+      }
 
-@media (max-width: 768px) {
-  .menu-toggle {
-    display: block;
-  }
-}
+      .header-title-section {
+        text-align: center;
+        z-index: 2;
+      }
 
-        .background-image {
-          position: absolute;
-          top: 0;
+      .header-title-main {
+        font-size: clamp(24px, 4vw, 40px);
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1.2;
+        margin-bottom: 5px;
+        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+      }
+
+      /* Chat Container - ChatGPT Style */
+      .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 10;
+        height: calc(100vh - 120px); /* Reserve space for header */
+      }
+
+      /* Messages Area - Scrollable */
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 20px 120px 20px; /* Extra bottom padding for input area */
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        min-height: 0; /* Important for flexbox scrolling */
+      }
+
+      .chat-messages::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .chat-messages::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: rgba(132, 204, 22, 0.6);
+        border-radius: 4px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(132, 204, 22, 0.8);
+      }
+
+      /* Welcome Message */
+      .welcome-message {
+        text-align: center;
+        margin: auto;
+        padding: 40px 20px;
+      }
+
+      .welcome-message h2 {
+        font-size: 24px;
+        color: #1f2937;
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+
+      .welcome-message p {
+        font-size: 16px;
+        color: #6b7280;
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      /* Message Bubbles */
+      .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        font-size: 15px;
+        line-height: 1.5;
+        word-wrap: break-word;
+        position: relative;
+      }
+
+      .message-bubble.user {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #84CC16, #65A30D);
+        color: white;
+        border-bottom-right-radius: 6px;
+      }
+
+      .message-bubble.assistant {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.9);
+        color: #1f2937;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-bottom-left-radius: 6px;
+        backdrop-filter: blur(10px);
+      }
+
+      .message-bubble.loading {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.9);
+        color: #6b7280;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      .message-bubble img {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 12px;
+        margin-top: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .timestamp {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        opacity: 0.7;
+      }
+
+      /* Chat Input Area - Fixed at Bottom */
+      .chat-input-area {
+        position: sticky;
+        bottom: 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+        margin-top: auto;
+      }
+
+      .input-container {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+      }
+
+      .message-input {
+        flex: 1;
+        min-height: 50px;
+        max-height: 150px;
+        padding: 12px 50px 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 25px;
+        font-size: 16px;
+        outline: none;
+        background: white;
+        resize: none;
+        font-family: inherit;
+        line-height: 1.5;
+        transition: all 0.2s ease;
+      }
+
+      .message-input:focus {
+        border-color: #84CC16;
+        box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
+      }
+
+      .message-input::placeholder {
+        color: #9ca3af;
+      }
+
+      .input-actions {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        gap: 4px;
+      }
+
+      .action-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 50%;
+        background: #84CC16;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 16px;
+      }
+
+      .action-btn:hover {
+        background: #65A30D;
+        transform: scale(1.05);
+      }
+
+      .action-btn:disabled {
+        background: #d1d5db;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .action-btn.recording {
+        background: #ef4444;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .recording-indicator {
+        font-size: 12px;
+        color: #ef4444;
+        margin-left: 8px;
+        font-weight: 500;
+      }
+
+      /* Image Preview */
+      .image-preview {
+        position: relative;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .image-preview img {
+        max-width: 120px;
+        max-height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+      }
+
+      .remove-image {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Overlay for mobile sidebar */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+      }
+
+      .overlay.show {
+        display: block;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .header {
+          padding: 20px 15px;
+        }
+
+        .header-title-main {
+          font-size: 22px;
+        }
+
+        .chat-container {
+          height: calc(100vh - 100px);
+        }
+
+        .chat-messages {
+          padding: 15px 15px 100px 15px;
+        }
+
+        .chat-input-area {
+          padding: 15px;
+          position: fixed;
+          bottom: 0;
           left: 0;
-          width: 100%;
-          height: 100%;
-          background-image: url(${background});
-          background-repeat: no-repeat;
-          background-position: center center;
-          background-size: cover;
-          opacity: 0.8;
-          z-index: 1;
-          transform: scaleX(-1);
-          filter: blur(10px);
-         -webkit-filter: blur(10px);
+          right: 0;
+          background: rgba(255, 255, 255, 0.98);
         }
 
-.header {
- background-image: url(${sublogo});
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px 20px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  position: relative;
-  text-align: center;
-}
-
-.header-top {
-
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-.header-title-section {
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px; /* Spacing between elements */
-  flex: 1;
-}
-
-.header-titles {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 16px; /* Optional padding for better spacing */
-}
-
-.sublogo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%; /* Full width of parent */
-  max-width: 300px; /* Limit maximum width for responsiveness */
-  margin-bottom: 16px; /* Space below the logo */
-}
-
-.sublogo {
-  height: auto; /* Maintain aspect ratio */
-  width: 100%; /* Fill the container */
-  max-width: 200px; /* Prevent excessive stretching */
-  object-fit: contain; /* Ensure no distortion */
-}
-
-.header-title-main {
-  font-size: 40px;
-  font-weight: 700;
-  color: #1f2937;
-  line-height: 1.1;
-  margin-bottom: 4px;
-  
-}
-
-.header-title-sub {
-  font-size: 18px;
-  font-weight: 500;
-  color: #6b7280;
-  line-height: 1.1;
-}
-        // .header-title-section {
-        //   display: flex;
-        //   align-items: center;
-        //   gap: 16px;
-        //   justify-content: center;
-        //   flex: 1;
-        // }
-
-        // .header-logo {
-        //   width: 60px;
-        //   height: 60px;
-        //   object-fit: contain;
-        // }
-
-        // .header-titles {
-        //   display: flex;
-        //   flex-direction: column;
-        //   align-items: center;
-        // }
-
-        // .header-title-main {
-        //   font-size: 28px;
-        //   font-weight: 700;
-        //   color: #1f2937;
-        //   line-height: 1.1;
-        //   margin-bottom: 4px;
-        // }
-
-        // .header-title-sub {
-        //   font-size: 18px;
-        //   font-weight: 500;
-        //   color: #6b7280;
-        //   line-height: 1.1;
-        // }
-
-        // .sublogo-container {
-        //   display: flex;
-        //   justify-content: center;
-        //   margin-top: 10px;
-        // }
-
-        // .sublogo {
-        //   height: 24px;
-        //   object-fit: contain;
-        // }
-
-        .chat-area {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          padding: 40px 20px;
-          z-index: 10;
-          position: relative;
-          overflow-y: scroll;
-          overflow-y: scroll;
-          scroll-behavior: smooth;
-        
-        }
-
-        .chat-area::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chat-area::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.chat-area::-webkit-scrollbar-thumb {
-  background: #84cc16;
-  border-radius: 3px;
-}
-//         .chat-area {
-//   flex: 1;
-//   overflow-y: auto;
-//   padding: 1rem;
-//   display: flex;
-//   flex-direction: column;
-//   gap: 0.75rem;
-// }
-
-.message-bubble {
-  max-width: 75%;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.message-bubble.user {
-  align-self: flex-end;
-  background-color: #dcfce7;
-  color: #16a34a;
-}
-
-.message-bubble.assistant {
-  align-self: flex-start;
-  background-color: #f3f4f6;
-  color: #1f2937;
-}
-
-.message-bubble.loading {
-  align-self: flex-start;
-  background-color: #f3f4f6;
-  color: #6b7280;
-}
-
-.message-bubble img {
-  margin-top: 0.5rem;
-  max-width: 100%;
-  border-radius: 8px;
-}
-
-.message-bubble small.timestamp {
-  display: block;
-  margin-top: 0.3rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.message-bubble h4.gpt-heading {
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #1f2937;
-  border-left: 4px solid #84cc16;
-  padding-left: 10px;
-  margin-left:10px
-}
-
-.message-bubble p {
-  margin-bottom: 0.5rem;
-   margin-left:10px
-}
-
-        .welcome-message {
-          text-align: center;
-          color: white;
-          font-size: 18px;
-          margin-bottom: 30px;
-          max-width: 600px;
-        }
-
-        .input-container {
-          width: 100%;
-          max-width: 700px;
-          position: relative;
-          margin-top: auto;
-          margin-bottom: 20px;
+        .message-bubble {
+          max-width: 85%;
+          font-size: 14px;
         }
 
         .message-input {
-          width: 100%;
-          padding: 16px 60px 16px 20px;
-          border: 2px solid rgba(132, 204, 22, 0.3);
-          border-radius: 25px;
           font-size: 16px;
-          outline: none;
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(10px);
-          transition: all 0.3s ease;
-          resize: none;
-          min-height: 52px;
-          max-height: 120px;
+          padding: 10px 45px 10px 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header-title-main {
+          font-size: 18px;
         }
 
-        .message-input:focus {
-          border-color: #84CC16;
-          box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
+        .chat-container {
+          height: calc(100vh - 80px);
         }
 
-        .input-actions {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          display: flex;
-          gap: 8px;
+        .chat-messages {
+          padding: 10px 10px 90px 10px;
         }
 
-        .action-btn {
-          width: 32px;
-          height: 32px;
-          border: none;
-          border-radius: 50%;
-          background: #84CC16;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .action-btn:hover {
-          background: #65A30D;
-          transform: scale(1.05);
-        }
-
-        .action-btn:disabled {
-          background: #d1d5db;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .overlay {
+        .chat-input-area {
+          padding: 12px;
           position: fixed;
-          top: 0;
+          bottom: 0;
           left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5);
-          z-index: 999;
-          display: none;
+          right: 0;
         }
 
-        .overlay.show {
-          display: block;
+        .message-bubble {
+          max-width: 90%;
+          padding: 10px 14px;
         }
+      }
+    `}</style>
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-          .sidebar {
-            width: 280px;
-          }
+    {/* Mobile Overlay */}
+    <div 
+      className={`overlay ${isSidebarOpen ? 'show' : ''}`}
+      onClick={toggleSidebar}
+    ></div>
 
-          .sidebar-mobile {
-            display: block;
-          }
+    {/* Sidebar - Desktop */}
+    <aside className="sidebar sidebar-desktop">
+      <div className="logo-section">
+        <img src={logo} alt="EROS Logo" className="logo" />
+      </div>
 
-          .sidebar-desktop {
-            display: none;
-          }
-
-          .menu-toggle {
-            display: block;
-          }
-
-          .header-title-main {
-            font-size: 22px;
-          }
-
-          .header-title-sub {
-            font-size: 16px;
-          }
-
-          .header-logo {
-            width: 50px;
-            height: 50px;
-          }
-
-          .welcome-message {
-            font-size: 16px;
-            padding: 0 10px;
-          }
-
-          .message-input {
-            padding: 14px 50px 14px 16px;
-            font-size: 14px;
-          }
-
-          .input-actions {
-            right: 10px;
-          }
-
-          .action-btn {
-            width: 28px;
-            height: 28px;
-          }
-        }
-
-        @media (min-width: 769px) {
-          .sidebar-desktop {
-            display: block;
-          }
-
-          .sidebar-mobile {
-            display: none;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .header {
-            padding: 15px;
-          }
-
-          .header-title-main {
-            font-size: 18px;
-          }
-
-          .header-title-sub {
-            font-size: 14px;
-          }
-
-          .header-logo {
-            width: 40px;
-            height: 40px;
-          }
-
-          .chat-area {
-            padding: 20px 15px;
-          }
-
-          .logo-section {
-            margin-bottom: 30px;
-          }
-
-          .title-main {
-            font-size: 14px;
-          }
-
-          .title-sub {
-            font-size: 12px;
-          }
-
-          .nav-link {
-            padding: 10px 12px;
-            font-size: 14px;
-          }
-
-          .sublogo {
-            height: 20px;
-          }
-        }
-
-        .action-btn.recording {
-  color: red;
-  font-weight: bold;
-}
-
-.recording-indicator {
-  margin-left: 4px;
-  font-size: 12px;
-}
-
-.message-bubble {
-  max-width: 75%;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.message-bubble.user {
-  align-self: flex-end;
-  background-color: #dcfce7;
-  color: #16a34a;
-}
-
-.message-bubble.assistant {
-  align-self: flex-start;
-  background-color: #f3f4f6;
-  color: #1f2937;
-}
-
-.message-bubble img {
-  max-width: 200px;     /* Adjust as needed */
-  max-height: 200px;    /* Adjust as needed */
-  object-fit: contain;
-  border-radius: 8px;
-  margin-top: 0.5rem;
-}
-
-.message-bubble small.timestamp {
-  display: block;
-  margin-top: 0.3rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.input-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #84cc16;
-}
-
-.input-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.image-preview {
-  position: relative;
-  max-width: 30%;
-  margin: 0.5rem 0;
-}
-
-.image-preview img {
-  max-width: 120px;     /* Limit preview width */
-  max-height: 120px;    /* Limit preview height */
-  object-fit: cover;    /* Keep aspect ratio, crop if needed */
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-.remove-image {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 2px 5px;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-
-      `}</style>
-
-      {/* Mobile Overlay */}
-      <div 
-        className={`overlay ${isSidebarOpen ? 'show' : ''}`}
-        onClick={toggleSidebar}
-      ></div>
-
-      {/* Sidebar - Desktop */}
-      <aside className="sidebar sidebar-desktop">
-        <div className="logo-section">
-          <img src={logo} alt="EROS Logo" className="logo" />
-          <div className="app-title">
-            {/* <div className="title-main">EROS</div>
-            <div className="title-sub">UNIVERSE</div> */}
-          </div>
-        </div>
-
-        <nav>
-          <ul className="nav-menu">
+      <nav>
+        <ul className="nav-menu">
           <li className="nav-item">
-  <a href="#" className="nav-link active" onClick={(e) => {
-      e.preventDefault();
-      startNewChat();
-    }}
-  >
-    <MessageCircle className="nav-icon" />
-    New Chat
-  </a>
-</li>
-            <li className="nav-item">
-              <a href="#" className="nav-link">
-                <History className="nav-icon" />
-                History Chat
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="#" className="nav-link">
-                <Bookmark className="nav-icon" />
-                Saved Chat
-              </a>
-            </li>
-          </ul>
+            <a href="#" className="nav-link active" onClick={(e) => {
+                e.preventDefault();
+                startNewChat();
+              }}
+            >
+              <MessageCircle className="nav-icon" />
+              New Chat
+            </a>
+          </li>
+          <li className="nav-item">
+            <a href="#" className="nav-link">
+              <History className="nav-icon" />
+              History Chat
+            </a>
+          </li>
+          <li className="nav-item">
+            <a href="#" className="nav-link">
+              <Bookmark className="nav-icon" />
+              Saved Chat
+            </a>
+          </li>
+        </ul>
 
-          <div className="nav-bottom">
-            <ul className="nav-menu">
-              <li className="nav-item">
-                <a href="#" className="nav-link">
-                  <Settings className="nav-icon" />
-                  Settings
-                </a>
-              </li>
-              <li className="nav-item">
-                <a href="#" className="nav-link">
-                  <LogOut className="nav-icon" />
-                  Log Out
-                </a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </aside>
-
-      {/* Sidebar - Mobile */}
-      <aside className={`sidebar sidebar-mobile ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="logo-section">
-          <img src={logo} alt="EROS Logo" className="logo" />
-          
-          {/* <div className="app-title">
-            <div className="title-main">EROS</div>
-            <div className="title-sub">UNIVERSE</div>
-          </div> */}
-        </div>
-
-        <nav>
+        <div className="nav-bottom">
           <ul className="nav-menu">
             <li className="nav-item">
-              <a href="#" className="nav-link active" onClick={toggleSidebar}>
-                <MessageCircle className="nav-icon" />
-                New Chat
+              <a href="#" className="nav-link">
+                <Settings className="nav-icon" />
+                Settings
               </a>
             </li>
             <li className="nav-item">
-              <a href="#" className="nav-link" onClick={toggleSidebar}>
-                <History className="nav-icon" />
-                History Chat
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="#" className="nav-link" onClick={toggleSidebar}>
-                <Bookmark className="nav-icon" />
-                Saved Chat
+              <a href="#" className="nav-link">
+                <LogOut className="nav-icon" />
+                Log Out
               </a>
             </li>
           </ul>
+        </div>
+      </nav>
+    </aside>
 
-          <div className="nav-bottom">
-            <ul className="nav-menu">
-              <li className="nav-item">
-                <a href="#" className="nav-link" onClick={toggleSidebar}>
-                  <Settings className="nav-icon" />
-                  Settings
-                </a>
-              </li>
-              <li className="nav-item">
-                <a href="#" className="nav-link" onClick={toggleSidebar}>
-                  <LogOut className="nav-icon" />
-                  Log Out
-                </a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </aside>
+    {/* Sidebar - Mobile */}
+    <aside className={`sidebar sidebar-mobile ${isSidebarOpen ? 'open' : ''}`}>
+      <div className="logo-section">
+        <img src={logo} alt="EROS Logo" className="logo" />
+      </div>
 
-      {/* Main Content */}
- <main className="main-content">
+      <nav>
+        <ul className="nav-menu">
+          <li className="nav-item">
+            <a href="#" className="nav-link active" onClick={(e) => {
+                e.preventDefault();
+                startNewChat();
+                toggleSidebar();
+              }}
+            >
+              <MessageCircle className="nav-icon" />
+              New Chat
+            </a>
+          </li>
+          <li className="nav-item">
+            <a href="#" className="nav-link" onClick={toggleSidebar}>
+              <History className="nav-icon" />
+              History Chat
+            </a>
+          </li>
+          <li className="nav-item">
+            <a href="#" className="nav-link" onClick={toggleSidebar}>
+              <Bookmark className="nav-icon" />
+              Saved Chat
+            </a>
+          </li>
+        </ul>
+
+        <div className="nav-bottom">
+          <ul className="nav-menu">
+            <li className="nav-item">
+              <a href="#" className="nav-link" onClick={toggleSidebar}>
+                <Settings className="nav-icon" />
+                Settings
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="#" className="nav-link" onClick={toggleSidebar}>
+                <LogOut className="nav-icon" />
+                Log Out
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    {/* Main Content */}
+    <main className="main-content">
+      {/* Background Image - Full Display */}
       <div className="background-image"></div>
 
-      <header
-        className="header"
-        style={{
-          backgroundImage: `url(${sublogo})`,
-            // backgroundImage: `url(${sample})`,
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          // backdropFilter: 'blur(10px)',
-          // WebkitBackdropFilter: 'blur(10px)'
-        }}
-      >
+      {/* Header with Sublogo Background */}
+      <header className="header">
         <button className="menu-toggle" onClick={toggleSidebar}>
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-        <div className="header-top"></div>
         <div className="header-title-section">
-          <div className="header-titles">
-            <h1 className="header-title-main">Ayurvedic Multimodal</h1>
-            <h2 className="header-title-main">Consultant</h2>
-          </div>
+          <h1 className="header-title-main">Ayurvedic Multimodal</h1>
+          <h1 className="header-title-main">Consultant</h1>
         </div>
       </header>
 
-      <div className="chat-area" ref={chatAreaRef}>
-        {/* Render Messages */}
-        {conversation.length === 0 && (
-          <div className="welcome-message">
-            <p>Welcome to your Ayurvedic health consultation. How can I help you today?</p>
-          </div>
-        )}
-{/* 
-        {conversation.map((msg, index) => (
-  <div key={index} className={`message-bubble ${msg.type}`}>
-    {msg.content && (
-      <div
-        dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-      />
-    )}
-    {msg.image && (
-      <img src={msg.image} alt="User uploaded" className="message-image" />
-    )}
-    <small className="timestamp">{msg.timestamp}</small>
-  </div>
-))} */}
-{conversation.map((msg, index) => (
-  <div key={index} className={`message-bubble ${msg.type}`}>
-    <div style={{ marginLeft: '8px' }}>
-  <ReactMarkdown>{msg.content}</ReactMarkdown>
-</div>
-    {msg.image && <img src={msg.image} alt="Assistant response" className="message-image" />}
-    <small className="timestamp">{msg.timestamp}</small>
-  </div>
-))}
+      {/* Chat Container */}
+      <div className="chat-container">
+        {/* Messages Area */}
+        <div className="chat-messages" ref={chatAreaRef}>
+          {conversation.length === 0 && (
+            <div className="welcome-message">
+              <h2>Welcome to Your Ayurvedic Consultation</h2>
+              <p>I'm here to help with your health questions using traditional Ayurvedic wisdom. How can I assist you today?</p>
+            </div>
+          )}
 
-         {imagePreview && (
-          <div className="image-preview">
-            <img src={imagePreview} alt="Selected preview" />
-            <button className="remove-image" onClick={clearImage}>
-              <X size={12} />
-            </button>
-          </div>
-        )}
-        {isLoading && (
-          <div className="message-bubble loading">
-            <span>Typing...</span>
-          </div>
-        )}
+          {conversation.map((msg, index) => (
+            <div key={index} className={`message-bubble ${msg.type}`}>
+              <div style={{ marginLeft: '4px' }}>
+                <ReactMarkdown>{msg.content}</ReactMarkdown>
+              </div>
+              {msg.image && (
+                <img src={msg.image} alt="Assistant response" className="message-image" />
+              )}
+              <small className="timestamp">{msg.timestamp}</small>
+            </div>
+          ))}
 
-<div className="chat-input-wrapper">
-  <div className="input-container">
-    <input
-      type="file"
-      accept="image/*"
-      ref={fileInputRef}
-      style={{ display: 'none' }}
-      onChange={handleImageSelect}
-    />
-    <textarea
-      className="message-input"
-      placeholder="Type a message..."
-      value={message}
-      onChange={(e) => setMessage(e.target.value)}
-      onKeyPress={handleKeyPress}
-      rows={1}
-      style={{
-        resize: 'none',
-        height: 'auto',
-        maxHeight: '100px',
-        width: 'calc(100% - 80px)', // Adjust based on button width
-      }}
-    />
-    <div className="input-actions">
-      <button
-        className="action-btn"
-        title="Upload image"
-        onClick={() => fileInputRef.current.click()}
-      >
-        <Plus size={16} />
-      </button>
-      {!isRecording ? (
-        <button className="action-btn" title="Start recording" onClick={startRecording}>
-          <Mic size={16} />
-        </button>
-      ) : (
-        <button className="action-btn recording" title="Stop recording" onClick={stopRecording}>
-          <StopCircle size={16} />
-          <span className="recording-indicator">Recording...</span>
-        </button>
-      )}
-      <button
-        className="action-btn"
-        title="Send message"
-        onClick={handleSendMessage}
-        disabled={!message.trim() && !selectedImage && !audioBlob}
-      >
-        <Send size={16} />
-      </button>
-    </div>
-  </div>
-</div>
+          {isLoading && (
+            <div className="message-bubble loading">
+              <span>Typing...</span>
+            </div>
+          )}
+        </div>
 
-         {/* {imagePreview && (
-          <div className="image-preview">
-            <img src={imagePreview} alt="Selected preview" />
-            <button className="remove-image" onClick={clearImage}>
-              <X size={12} />
-            </button>
+        {/* Chat Input Area - Fixed at Bottom */}
+        <div className="chat-input-area">
+          {imagePreview && (
+            <div className="image-preview">
+              <img src={imagePreview} alt="Selected preview" />
+              <button className="remove-image" onClick={clearImage}>
+                <X size={12} />
+              </button>
+            </div>
+          )}
+
+          <div className="input-container">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleImageSelect}
+            />
+            
+            <textarea
+              className="message-input"
+              placeholder="Message Ayurvedic Consultant..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              rows={1}
+              style={{
+                height: 'auto',
+                minHeight: '50px',
+                maxHeight: '150px',
+              }}
+            />
+
+            <div className="input-actions">
+              <button
+                className="action-btn"
+                title="Upload image"
+                onClick={() => fileInputRef.current.click()}
+              >
+                <Plus size={18} />
+              </button>
+              
+              {!isRecording ? (
+                <button 
+                  className="action-btn" 
+                  title="Start recording" 
+                  onClick={startRecording}
+                >
+                  <Mic size={18} />
+                </button>
+              ) : (
+                <button 
+                  className="action-btn recording" 
+                  title="Stop recording" 
+                  onClick={stopRecording}
+                >
+                  <StopCircle size={18} />
+                </button>
+              )}
+              
+              <button
+                className="action-btn"
+                title="Send message"
+                onClick={handleSendMessage}
+                disabled={!message.trim() && !selectedImage && !audioBlob}
+              >
+                <Send size={18} />
+              </button>
+            </div>
           </div>
-        )} */}
+
+          {isRecording && (
+            <div className="recording-indicator">
+              🔴 Recording...
+            </div>
+          )}
+        </div>
       </div>
     </main>
-    </div>
-  );
+  </div>
+);
 };
 
 export default App;
