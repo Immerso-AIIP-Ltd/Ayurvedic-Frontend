@@ -43,7 +43,7 @@ const startNewChat = async () => {
   if (!confirmReset) return;
 
   try {
-    const response = await fetch('http://health-agent-a795ae5e2c9b.herokuapp.com/new-chat', {
+    const response = await fetch('https://health-agent-a795ae5e2c9b.herokuapp.com/new-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -239,7 +239,7 @@ const handleSendMessage = async () => {
       formData.append('audio', audioBlob, 'audio.webm');
     }
 
-    const response = await fetch('http://health-agent-a795ae5e2c9b.herokuapp.com/ayurveda-consult', {
+    const response = await fetch('https://health-agent-a795ae5e2c9b.herokuapp.com/ayurveda-consult', {
       method: 'POST',
       body: formData,
     });
