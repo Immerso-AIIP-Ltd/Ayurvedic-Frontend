@@ -564,7 +564,7 @@ return (
 
       .welcome-message p {
         font-size: 16px;
-        color: #6b7280;
+         color: #1f2937;
         max-width: 500px;
         margin: 0 auto;
         line-height: 1.6;
